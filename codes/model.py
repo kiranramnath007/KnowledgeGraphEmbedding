@@ -60,8 +60,17 @@ class KGEModel(nn.Module):
         if model_name == 'pRotatE':
             self.modulus = nn.Parameter(torch.Tensor([[0.5 * self.embedding_range.item()]]))
         
+        if model_name == 'ERMLP':
+            k = self.entity_dim
+            self.mlp = nn.Sequential(
+            nn.Linear(3*k, 2*k),
+            nn.ReLU(),
+            nn.Linear(2*k, k),
+            nn.ReLU(),
+            nn.Linear(k, 1))
+
         #Do not forget to modify this line when you add a new model in the "forward" function
-        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE']:
+        if model_name not in ['TransE', 'DistMult', 'ComplEx', 'RotatE', 'pRotatE', 'ERMLP']:
             raise ValueError('model %s not supported' % model_name)
             
         if model_name == 'RotatE' and (not double_entity_embedding or double_relation_embedding):
@@ -78,8 +87,6 @@ class KGEModel(nn.Module):
             real_part = self.entity_dim
         
         self.state_dict()["entity_embedding"][:,:real_part] = torch.from_numpy(weights_matrix)
-        # self.entity_embedding.weight.data[:,:real_part].copy_(torch.from_numpy(weights_matrix))
-        # self.entity_embedding.weight.requires_grad = True
 
     def forward(self, sample, mode='single'):
         '''
@@ -165,7 +172,8 @@ class KGEModel(nn.Module):
             'DistMult': self.DistMult,
             'ComplEx': self.ComplEx,
             'RotatE': self.RotatE,
-            'pRotatE': self.pRotatE
+            'pRotatE': self.pRotatE,
+            'ERMLP': self.ERMLP
         }
         
         if self.model_name in model_func:
@@ -175,6 +183,23 @@ class KGEModel(nn.Module):
         
         return score
     
+    def ERMLP(self, head, rel, tail, mode):
+        print(head.shape, rel.shape, tail.shape)
+        head_shape, rel_shape, tail_shape = head.shape, rel.shape, tail.shape
+        if mode == 'head-batch':
+            num_neg_samples = head_shape[1]
+            t, r = tail.repeat(1, num_neg_samples, 1), rel.repeat(1, num_neg_samples, 1)
+            phi = torch.cat([head, r, t], 2)
+
+        else:
+            num_neg_samples = tail_shape[1] #1 in case of pos samples, negative_sample_size in case of pos and neg samples
+            h, r = head.repeat(1, num_neg_samples, 1), rel.repeat(1, num_neg_samples, 1)
+            phi = torch.cat([h, r, tail], 2)  # M x 3k            
+        score = self.mlp(phi)
+        score = self.gamma.item() - score
+        return score
+
+
     def TransE(self, head, relation, tail, mode):
         if mode == 'head-batch':
             score = head + (relation - tail)
