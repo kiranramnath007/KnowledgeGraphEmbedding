@@ -184,7 +184,7 @@ class KGEModel(nn.Module):
         return score
     
     def ERMLP(self, head, rel, tail, mode):
-        print(head.shape, rel.shape, tail.shape)
+        
         head_shape, rel_shape, tail_shape = head.shape, rel.shape, tail.shape
         if mode == 'head-batch':
             num_neg_samples = head_shape[1]
