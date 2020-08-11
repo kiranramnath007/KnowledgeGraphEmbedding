@@ -27,7 +27,9 @@ class KGEModel(nn.Module):
         self.nrelation = nrelation
         self.hidden_dim = hidden_dim
         self.epsilon = 2.0
-        
+        self.double_entity_embedding = double_entity_embedding
+        self.double_relation_embedding = double_relation_embedding
+
         self.gamma = nn.Parameter(
             torch.Tensor([gamma]), 
             requires_grad=False
@@ -67,7 +69,18 @@ class KGEModel(nn.Module):
 
         if model_name == 'ComplEx' and (not double_entity_embedding or not double_relation_embedding):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
+
+    def initialize_embeddings(self):
+        weights_matrix = np.load('../data/FVQA/weights_matrix.npy',allow_pickle=True)
+        if self.double_entity_embedding:
+            real_part = int(self.entity_dim / 2)
+        else:
+            real_part = self.entity_dim
         
+        self.state_dict()["entity_embedding"][:,:real_part] = torch.from_numpy(weights_matrix)
+        # self.entity_embedding.weight.data[:,:real_part].copy_(torch.from_numpy(weights_matrix))
+        # self.entity_embedding.weight.requires_grad = True
+
     def forward(self, sample, mode='single'):
         '''
         Forward function that calculate the score of a batch of triples.

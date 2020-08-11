@@ -52,7 +52,8 @@ def parse_args(args=None):
     parser.add_argument('--test_batch_size', default=4, type=int, help='valid/test batch size')
     parser.add_argument('--uni_weight', action='store_true', 
                         help='Otherwise use subsampling weighting like in word2vec')
-    
+    parser.add_argument('-i','--initialize',default = False, action = 'store_true',
+                        help='whether to initialize entities as average word embeddings')
     parser.add_argument('-lr', '--learning_rate', default=0.0001, type=float)
     parser.add_argument('-cpu', '--cpu_num', default=10, type=int)
     parser.add_argument('-init', '--init_checkpoint', default=None, type=str)
@@ -123,8 +124,11 @@ def read_triple(file_path, entity2id, relation2id):
     triples = []
     with open(file_path) as fin:
         for line in fin:
-            h, r, t = line.strip().split('\t')
-            triples.append((entity2id[h], relation2id[r], entity2id[t]))
+            try:
+                h, r, t = line.strip().split('\t')
+                triples.append((entity2id[h], relation2id[r], entity2id[t]))
+            except:
+                print(line)
     return triples
 
 def set_logger(args):
@@ -179,7 +183,10 @@ def main(args):
     with open(os.path.join(args.data_path, 'entities.dict')) as fin:
         entity2id = dict()
         for line in fin:
-            eid, entity = line.strip().split('\t')
+            try:
+                eid, entity = line.strip().split('\t')
+            except:
+                eid, entity = line.strip(), ''
             entity2id[entity] = int(eid)
 
     with open(os.path.join(args.data_path, 'relations.dict')) as fin:
@@ -228,6 +235,8 @@ def main(args):
         double_relation_embedding=args.double_relation_embedding
     )
     
+    if args.initialize:
+        kge_model.initialize_embeddings()
     logging.info('Model Parameter Configuration:')
     for name, param in kge_model.named_parameters():
         logging.info('Parameter %s: %s, require_grad = %s' % (name, str(param.size()), str(param.requires_grad)))
