@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 from model import KGEModel
 
 from dataloader import TrainDataset
-from dataloader import BidirectionalOneShotIterator
+from dataloader import BidirectionalOneShotIterator, UnidirectionalIterator
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser(
@@ -262,7 +262,8 @@ def main(args):
             collate_fn=TrainDataset.collate_fn
         )
         
-        train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
+        # train_iterator = BidirectionalOneShotIterator(train_dataloader_head, train_dataloader_tail)
+        train_iterator = UnidirectionalIterator(train_dataloader_tail)
         
         # Set training configuration
         current_learning_rate = args.learning_rate
