@@ -426,6 +426,7 @@ class KGEModel(nn.Module):
 
                         batch_size = positive_sample.size(0)
 
+                        cls_score = model(positive_sample)
                         score = model((positive_sample, negative_sample), mode)
                         score += filter_bias
 
@@ -452,6 +453,7 @@ class KGEModel(nn.Module):
                                 'HITS@1': 1.0 if ranking <= 1 else 0.0,
                                 'HITS@3': 1.0 if ranking <= 3 else 0.0,
                                 'HITS@10': 1.0 if ranking <= 10 else 0.0,
+                                'CLS': 1.0 if cls_score >= 0 else 0.0
                             })
 
                         if step % args.test_log_steps == 0:
