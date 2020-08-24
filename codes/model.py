@@ -197,7 +197,7 @@ class KGEModel(nn.Module):
             phi = torch.cat([h, r, tail], 2)  # M x 3k            
         score = self.mlp(phi)
         score = score - self.gamma.item()
-        return score.squeeze()
+        return score
 
 
     def TransE(self, head, relation, tail, mode):
@@ -427,6 +427,7 @@ class KGEModel(nn.Module):
                         batch_size = positive_sample.size(0)
 
                         score = model((positive_sample, negative_sample), mode)
+                        score = score.squeeze()
                         score += filter_bias
 
                         #Explicitly sort all the entities to ensure that there is no test exposure bias
