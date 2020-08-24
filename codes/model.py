@@ -196,8 +196,8 @@ class KGEModel(nn.Module):
             h, r = head.repeat(1, num_neg_samples, 1), rel.repeat(1, num_neg_samples, 1)
             phi = torch.cat([h, r, tail], 2)  # M x 3k            
         score = self.mlp(phi)
-        score = self.gamma.item() - score
-        return score
+        score = score - self.gamma.item()
+        return score.squeeze()
 
 
     def TransE(self, head, relation, tail, mode):
