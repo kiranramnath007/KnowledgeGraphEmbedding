@@ -1,0 +1,13 @@
+0	Category
+1	Comparative
+2	HasA
+3	IsA
+4	HasProperty
+5	CapableOf
+6	Desires
+7	RelatedTo
+8	AtLocation
+9	PartOf
+10	ReceivesAction
+11	UsedFor
+12	CreatedBy
