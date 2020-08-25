@@ -427,8 +427,12 @@ class KGEModel(nn.Module):
                         batch_size = positive_sample.size(0)
 
                         score = model((positive_sample, negative_sample), mode)
-                        score = score.squeeze()
-                        score += filter_bias
+                        if len(score.shape) == 3 and score.shape[2] == 1:
+                            score = score.squeeze(2)
+                            score += filter_bias
+                        else:
+                            score = score.squeeze()
+                            score += filter_bias
 
                         #Explicitly sort all the entities to ensure that there is no test exposure bias
                         argsort = torch.argsort(score, dim = 1, descending=True)
