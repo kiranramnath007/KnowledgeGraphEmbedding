@@ -80,7 +80,11 @@ class KGEModel(nn.Module):
             raise ValueError('ComplEx should use --double_entity_embedding and --double_relation_embedding')
 
     def initialize_embeddings(self):
-        weights_matrix = np.load('../data/FVQA/weights_matrix.npy',allow_pickle=True)
+        gpu_flag = torch.cuda.is_available()
+        if not gpu_flag:
+            weights_matrix = np.load('../data/FVQA/weights_matrix.npy',allow_pickle=True)
+        else:
+            weights_matrix = np.load('./KnowledgeGraphEmbedding/data/FVQA/weights_matrix.npy', allow_pickle=True)
         if self.double_entity_embedding:
             real_part = int(self.entity_dim / 2)
         else:
