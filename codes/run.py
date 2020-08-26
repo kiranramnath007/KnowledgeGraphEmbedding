@@ -54,6 +54,10 @@ def parse_args(args=None):
                         help='Otherwise use subsampling weighting like in word2vec')
     parser.add_argument('-i','--initialize',default = False, action = 'store_true',
                         help='whether to initialize entities as average word embeddings')
+    parser.add_argument('-is','--initialize_state',default = False, action = 'store_true',
+                        help='whether to initialize entire state of model')                        
+    parser.add_argument('-is_path','--initialize_state_path', type = str,
+                        help='path of model state_dict')                        
     parser.add_argument('-lr', '--learning_rate', default=0.0001, type=float)
     parser.add_argument('-cpu', '--cpu_num', default=10, type=int)
     parser.add_argument('-init', '--init_checkpoint', default=None, type=str)
@@ -237,6 +241,10 @@ def main(args):
     
     if args.initialize:
         kge_model.initialize_embeddings()
+    
+    if args.initialize_state:
+        kge_model.initialize_state(args.initialize_state_path)
+
     logging.info('Model Parameter Configuration:')
     for name, param in kge_model.named_parameters():
         logging.info('Parameter %s: %s, require_grad = %s' % (name, str(param.size()), str(param.requires_grad)))
