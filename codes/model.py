@@ -92,10 +92,6 @@ class KGEModel(nn.Module):
         
         self.state_dict()["entity_embedding"][:,:real_part] = torch.from_numpy(weights_matrix)
 
-    def initialize_state(self, path):
-        checkpoint = torch.load(path)
-        self.load_state_dict(checkpoint['model_state_dict'])
-
     def forward(self, sample, mode='single'):
         '''
         Forward function that calculate the score of a batch of triples.
